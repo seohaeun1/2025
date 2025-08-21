@@ -151,4 +151,7 @@ if st.button("💾 저장하기"):
 # -----------------------
 if st.session_state.saved_quotes:
     st.subheader("📚 나의 영감 저장소")
-    for idx, item in enumerate(st.session_state.saved_quotes,
+    for idx, item in enumerate(st.session_state.saved_quotes, 1):  # 괄호 닫음
+        st.write(f"**{idx}. ({item['source']})** {item['content']}")
+        st.write(f"태그: {item['tags']} | 기분: {item['mood']}")
+        st.markdown("---")
