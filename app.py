@@ -9,7 +9,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- CSS 커스텀 (화려한 스타일) ---
+# --- CSS 꾸미기 ---
 st.markdown(
     """
     <style>
@@ -44,7 +44,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# --- 명언 데이터 (확장) ---
+# --- 명언 데이터 ---
 quotes = [
     {"text": "문학은 인간의 내면을 비추는 거울이다. – 톨스토이", "mood": "😢"},
     {"text": "상상력은 지식보다 더 중요하다. – 아인슈타인", "mood": "😊"},
@@ -68,42 +68,72 @@ quotes = [
     {"text": "단어는 인간의 가장 강력한 무기다. – 키플링", "mood": "😊"}
 ]
 
+# --- 문학 명대사 데이터 ---
+literary_lines = [
+    "“지금 슬프냐? 하지만 언젠가는 이 슬픔조차 그리움이 될 것이다.” – 괴테, 젊은 베르테르의 슬픔",
+    "“우리는 모두 늪 속에 있지만, 그중 몇몇은 별을 바라본다.” – 오스카 와일드",
+    "“내일은 내일의 태양이 떠오를 것이다.” – 마거릿 미첼, 바람과 함께 사라지다",
+    "“행복한 가정은 모두 비슷하지만, 불행한 가정은 제각각의 이유로 불행하다.” – 톨스토이, 안나 카레니나",
+    "“바람이 분다. 살아야겠다.” – 미야자와 겐지",
+    "“지옥은 타인의 시선이다.” – 장 폴 사르트르",
+    "“우리는 사랑하기 때문에 존재한다.” – 알베르 카뮈",
+    "“죽느냐 사느냐, 그것이 문제로다.” – 셰익스피어, 햄릿",
+    "“나는 고백한다, 나는 인간이다.” – 도스토옙스키",
+    "“모든 인간은 자유롭게 태어났다.” – 장 자크 루소"
+]
+
 # --- 세션 상태 ---
 if "saved_quotes" not in st.session_state:
     st.session_state.saved_quotes = []
 if "current_quote" not in st.session_state:
     st.session_state.current_quote = None
+if "current_line" not in st.session_state:
+    st.session_state.current_line = None
 
-# --- 메인 타이틀 ---
+# --- 타이틀 ---
 st.markdown('<div class="title">✨ 작가의 영감 노트 ✍️</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">오늘의 기분에 맞는 명언을 뽑고, 당신만의 해석을 남겨보세요.</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">오늘의 기분에 맞는 명언, 그리고 문학 속 명대사를 만나보세요.</div>', unsafe_allow_html=True)
 
-# --- 사이드바 ---
-st.sidebar.header("🎭 오늘의 기분을 선택하세요")
+# --- 사이드바 (기분 선택) ---
+st.sidebar.header("🎭 오늘의 기분")
 mood = st.sidebar.radio("기분:", ["😊 행복", "😢 슬픔", "😡 분노", "😐 차분"])
 
-# --- 명언 뽑기 ---
-if st.sidebar.button("오늘의 명언 뽑기"):
-    filtered = [q for q in quotes if q["mood"] in mood]
-    if filtered:
-        st.session_state.current_quote = random.choice(filtered)["text"]
-    else:
-        st.session_state.current_quote = "해당 기분에 맞는 명언이 아직 준비되지 않았습니다."
+# --- 버튼들 ---
+col1, col2 = st.columns(2)
+with col1:
+    if st.button("오늘의 명언 뽑기"):
+        filtered = [q for q in quotes if q["mood"] in mood]
+        if filtered:
+            st.session_state.current_quote = random.choice(filtered)["text"]
+        else:
+            st.session_state.current_quote = "해당 기분에 맞는 명언이 아직 준비되지 않았습니다."
+with col2:
+    if st.button("문학 명대사 뽑기"):
+        st.session_state.current_line = random.choice(literary_lines)
 
-# --- 명언 출력 ---
+# --- 출력 구역 ---
 if st.session_state.current_quote:
+    st.subheader("📖 오늘의 명언")
     st.markdown(f'<div class="quote-box">{st.session_state.current_quote}</div>', unsafe_allow_html=True)
 
-    interpretation = st.text_area("✍️ 나의 해석/느낀 점을 적어주세요:", "")
+if st.session_state.current_line:
+    st.subheader("🎬 오늘의 문학 명대사")
+    st.markdown(f'<div class="quote-box">{st.session_state.current_line}</div>', unsafe_allow_html=True)
 
-    if st.button("💾 저장하기"):
-        if interpretation.strip() != "":
-            st.session_state.saved_quotes.append(
-                {"quote": st.session_state.current_quote, "my_note": interpretation}
-            )
-            st.success("저장 완료! ✨")
-        else:
-            st.warning("해석을 입력해주세요!")
+# --- 해석 기록 ---
+interpretation = st.text_area("✍️ 나의 해석/느낀 점을 적어주세요:", "")
+
+if st.button("💾 저장하기"):
+    if interpretation.strip() != "":
+        st.session_state.saved_quotes.append(
+            {
+                "quote": st.session_state.current_quote if st.session_state.current_quote else st.session_state.current_line,
+                "my_note": interpretation
+            }
+        )
+        st.success("저장 완료! ✨")
+    else:
+        st.warning("해석을 입력해주세요!")
 
 # --- 저장된 기록 ---
 if st.session_state.saved_quotes:
