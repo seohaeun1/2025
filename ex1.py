@@ -1,2 +1,2 @@
 import streamlit as st
-st.title('고양이 귀여워')
+st.title('고양이 좋아')
