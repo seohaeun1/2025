@@ -48,33 +48,42 @@ if st.session_state.current_q < len(quiz_data):
     if st.button("정답 확인"):
         if choice == q["answer"]:
             st.success("정답입니다! 🎉")
-            st.balloons()
+            st.balloons()  # 정답일 때 풍선 효과
             st.session_state.score += 1
         else:
-            st.error(f"틀렸습니다 😭 정답은 👉 {q['answer']}")
+            st.error(f"틀렸습니다 😭 정답은 👉 {q['answer']}")  # 오답 이모지 출력
             st.session_state.wrong_list.append(q)
         
         st.session_state.current_q += 1
-        st.rerun()   # ✅ 최신 버전에서는 st.rerun()
+        st.rerun()
 
 # ------------------------
 # 퀴즈 종료 후 결과 출력
 # ------------------------
 else:
-    st.subheader("퀴즈 완료!")
-    st.write(f"최종 점수: **{st.session_state.score} / {len(quiz_data)}**")
+    st.subheader("📊 퀴즈 완료! 성적표")
+    st.write(f"총 문제 수: {len(quiz_data)}")
+    st.write(f"맞힌 문제 수: {st.session_state.score}")
+    st.write(f"틀린 문제 수: {len(quiz_data) - st.session_state.score}")
+    
+    # 성적 등급 출력
+    score_rate = st.session_state.score / len(quiz_data) * 100
+    if score_rate == 100:
+        st.success("🎉 완벽해요! 모든 문제를 맞췄습니다 👏")
+    elif score_rate >= 70:
+        st.info("👍 잘했어요! 조금만 더 연습하면 완벽해질 거예요!")
+    else:
+        st.warning("📖 조금 더 공부가 필요해요. 오답노트를 확인해 보세요!")
 
+    # 오답노트
     if st.session_state.wrong_list:
         st.write("📘 오답노트")
         for w in st.session_state.wrong_list:
             st.write(f"- {w['question']} (정답: {w['answer']})")
-    else:
-        st.success("완벽해요! 모든 문제를 맞췄습니다 👏")
 
     # 다시 풀기 버튼
-    if st.button("다시 풀기"):
+    if st.button("🔄 다시 풀기"):
         st.session_state.score = 0
         st.session_state.current_q = 0
         st.session_state.wrong_list = []
-        st.rerun()   # ✅ 최신 버전
-
+        st.rerun()
