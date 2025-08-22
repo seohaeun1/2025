@@ -1,7 +1,8 @@
 import streamlit as st
+import matplotlib.pyplot as plt
 
 # ------------------------
-# 맞춤법 퀴즈 데이터 (총 12문제)
+# 맞춤법 퀴즈 데이터 (주인님 제공 12문제)
 # ------------------------
 quiz_data = [
     {"question": "다음 중 올바른 맞춤법은?", "options": ["안 되", "안돼", "않돼"], "answer": "안돼"},
@@ -47,7 +48,7 @@ if st.session_state.current_q < len(quiz_data):
     if st.button("정답 확인"):
         if choice == q["answer"]:
             st.success("정답입니다! 🎉")
-            st.balloons()  # 🎈 정답 효과
+            st.balloons()
             st.session_state.score += 1
         else:
             st.error(f"틀렸습니다 😭 정답은 👉 {q['answer']}")
@@ -74,13 +75,29 @@ else:
     else:
         st.warning("📖 조금 더 공부가 필요해요. 오답노트를 확인해 보세요!")
 
+    # ------------------------
+    # 파이 차트 시각화
+    # ------------------------
+    labels = ['맞춘 문제', '틀린 문제']
+    sizes = [st.session_state.score, len(quiz_data) - st.session_state.score]
+    colors = ['#4CAF50', '#FF5252']
+
+    fig, ax = plt.subplots()
+    ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors)
+    ax.axis('equal')  # 원형 유지
+    st.pyplot(fig)
+
+    # ------------------------
     # 오답노트
+    # ------------------------
     if st.session_state.wrong_list:
         st.write("📘 오답노트")
         for w in st.session_state.wrong_list:
             st.write(f"- {w['question']} (정답: {w['answer']})")
 
+    # ------------------------
     # 다시 풀기 버튼
+    # ------------------------
     if st.button("🔄 다시 풀기"):
         st.session_state.score = 0
         st.session_state.current_q = 0
