@@ -4,7 +4,7 @@ import streamlit as st
 quiz_data = [
     {"question": "다음 중 올바른 맞춤법은?",
      "options": ["안 되", "안돼", "않돼"],
-     "answer": "안돼"},
+     "answer": "안 되"},
     
     {"question": "다음 중 올바른 맞춤법은?",
      "options": ["되려", "되이려", "되여"],
@@ -19,10 +19,15 @@ quiz_data = [
      "answer": "왠지"},
 ]
 
+# ------------------------
+# 앱 제목 & 소개
+# ------------------------
 st.title("✏️ 국어 맞춤법 퀴즈")
 st.write("헷갈리기 쉬운 맞춤법 문제를 풀어보세요!")
 
-# 상태 저장 (점수, 진행상황)
+# ------------------------
+# 세션 상태 초기화
+# ------------------------
 if "score" not in st.session_state:
     st.session_state.score = 0
 if "current_q" not in st.session_state:
@@ -30,7 +35,9 @@ if "current_q" not in st.session_state:
 if "wrong_list" not in st.session_state:
     st.session_state.wrong_list = []
 
-# 현재 문제 불러오기
+# ------------------------
+# 문제 풀이 구간
+# ------------------------
 if st.session_state.current_q < len(quiz_data):
     q = quiz_data[st.session_state.current_q]
     st.subheader(f"문제 {st.session_state.current_q+1}")
@@ -48,9 +55,11 @@ if st.session_state.current_q < len(quiz_data):
             st.session_state.wrong_list.append(q)
         
         st.session_state.current_q += 1
-        st.experimental_rerun()
+        st.rerun()   # ✅ 최신 버전에서는 st.rerun()
 
-# 모든 문제 완료 후 결과 출력
+# ------------------------
+# 퀴즈 종료 후 결과 출력
+# ------------------------
 else:
     st.subheader("퀴즈 완료!")
     st.write(f"최종 점수: **{st.session_state.score} / {len(quiz_data)}**")
@@ -67,4 +76,5 @@ else:
         st.session_state.score = 0
         st.session_state.current_q = 0
         st.session_state.wrong_list = []
-        st.experimental_rerun()
+        st.rerun()   # ✅ 최신 버전
+
