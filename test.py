@@ -2,7 +2,34 @@ import streamlit as st
 import matplotlib.pyplot as plt
 
 # ------------------------
-# 맞춤법 퀴즈 데이터 (주인님 제공 12문제)
+# 스타일 설정
+# ------------------------
+st.markdown(
+    """
+    <style>
+    body {
+        background-color: #ffe4ec;  /* 파스텔 분홍색 배경 */
+    }
+    .stButton>button {
+        background-color: #ffb6c1;  /* 버튼 파스텔 핑크 */
+        color: black;
+        font-weight: bold;
+    }
+    .stRadio>div>div>label {
+        color: #d63384;  /* 보기 텍스트 핑크 계열 */
+        font-size: 18px;
+    }
+    .big-font {
+        font-size:25px !important;
+        color: #c71585;
+        font-weight:bold;
+    }
+    </style>
+    """, unsafe_allow_html=True
+)
+
+# ------------------------
+# 퀴즈 데이터
 # ------------------------
 quiz_data = [
     {"question": "다음 중 올바른 맞춤법은?", "options": ["안 되", "안돼", "않돼"], "answer": "안돼"},
@@ -20,10 +47,10 @@ quiz_data = [
 ]
 
 # ------------------------
-# 앱 제목 & 소개
+# 앱 제목
 # ------------------------
-st.title("✏️ 헷갈리기 쉬운 국어 맞춤법 퀴즈")
-st.write("헷갈리기 쉬운 맞춤법 문제를 풀어보세요! ✅🎉")
+st.markdown('<p class="big-font">✏️ 헷갈리기 쉬운 국어 맞춤법 퀴즈</p>', unsafe_allow_html=True)
+st.write("파스텔 분홍 테마로 즐겁게 맞춤법을 학습해보세요! 🎀")
 
 # ------------------------
 # 세션 상태 초기화
@@ -36,7 +63,7 @@ if "wrong_list" not in st.session_state:
     st.session_state.wrong_list = []
 
 # ------------------------
-# 문제 풀이 구간
+# 문제 풀이
 # ------------------------
 if st.session_state.current_q < len(quiz_data):
     q = quiz_data[st.session_state.current_q]
@@ -47,18 +74,18 @@ if st.session_state.current_q < len(quiz_data):
 
     if st.button("정답 확인"):
         if choice == q["answer"]:
-            st.success("정답입니다! 🎉")
+            st.success("정답입니다! 🎉", icon="🎈")
             st.balloons()
             st.session_state.score += 1
         else:
-            st.error(f"틀렸습니다 😭 정답은 👉 {q['answer']}")
+            st.error(f"틀렸습니다 😭 정답은 👉 {q['answer']}", icon="❌")
             st.session_state.wrong_list.append(q)
         
         st.session_state.current_q += 1
         st.rerun()
 
 # ------------------------
-# 퀴즈 종료 후 결과 출력
+# 퀴즈 종료 후 결과
 # ------------------------
 else:
     st.subheader("📊 퀴즈 완료! 성적표")
@@ -76,15 +103,15 @@ else:
         st.warning("📖 조금 더 공부가 필요해요. 오답노트를 확인해 보세요!")
 
     # ------------------------
-    # 파이 차트 시각화
+    # 파이 차트
     # ------------------------
     labels = ['맞춘 문제', '틀린 문제']
     sizes = [st.session_state.score, len(quiz_data) - st.session_state.score]
-    colors = ['#4CAF50', '#FF5252']
+    colors = ['#ffb6c1', '#ffc0cb']  # 파스텔 핑크 계열
 
     fig, ax = plt.subplots()
     ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors)
-    ax.axis('equal')  # 원형 유지
+    ax.axis('equal')
     st.pyplot(fig)
 
     # ------------------------
@@ -96,7 +123,7 @@ else:
             st.write(f"- {w['question']} (정답: {w['answer']})")
 
     # ------------------------
-    # 다시 풀기 버튼
+    # 다시 풀기
     # ------------------------
     if st.button("🔄 다시 풀기"):
         st.session_state.score = 0
