@@ -2,7 +2,7 @@ import streamlit as st
 import matplotlib.pyplot as plt
 
 # ------------------------
-# 스타일 설정 (파스텔 핑크 + 버튼 호버 + 글자 강조)
+# 스타일 설정
 # ------------------------
 st.markdown(
     """
@@ -75,6 +75,10 @@ if "current_q" not in st.session_state:
     st.session_state.current_q = 0
 if "wrong_list" not in st.session_state:
     st.session_state.wrong_list = []
+if "show_result" not in st.session_state:
+    st.session_state.show_result = False
+if "last_choice" not in st.session_state:
+    st.session_state.last_choice = None
 
 # ------------------------
 # 문제 풀이
@@ -87,7 +91,12 @@ if st.session_state.current_q < len(quiz_data):
     choice = st.radio("보기", q["options"], index=None)
 
     if st.button("정답 확인"):
-        if choice == q["answer"]:
+        st.session_state.last_choice = choice
+        st.session_state.show_result = True
+
+    # 결과 표시
+    if st.session_state.show_result:
+        if st.session_state.last_choice == q["answer"]:
             st.success("정답입니다! 🎉", icon="🎈")
             st.balloons()
             st.session_state.score += 1
@@ -95,8 +104,10 @@ if st.session_state.current_q < len(quiz_data):
             st.error(f"틀렸습니다 😭 정답은 👉 {q['answer']}", icon="❌")
             st.session_state.wrong_list.append(q)
         
-        st.session_state.current_q += 1
-        st.rerun()
+        # 다음 문제 버튼
+        if st.button("다음 문제"):
+            st.session_state.current_q += 1
+            st.session_state.show_result = False
 
 # ------------------------
 # 퀴즈 종료 후 결과
@@ -143,4 +154,6 @@ else:
         st.session_state.score = 0
         st.session_state.current_q = 0
         st.session_state.wrong_list = []
+        st.session_state.show_result = False
+        st.session_state.last_choice = None
         st.rerun()
