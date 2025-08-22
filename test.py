@@ -2,25 +2,39 @@ import streamlit as st
 import matplotlib.pyplot as plt
 
 # ------------------------
-# 스타일 설정
+# 스타일 설정 (파스텔 핑크 + 버튼 호버 + 글자 강조)
 # ------------------------
 st.markdown(
     """
     <style>
     body {
-        background-color: #ffe4ec;  /* 파스텔 분홍색 배경 */
+        background-color: #ffe4ec;  /* 파스텔 분홍 배경 */
     }
     .stButton>button {
-        background-color: #ffb6c1;  /* 버튼 파스텔 핑크 */
+        background-color: #ffb6c1;  
         color: black;
         font-weight: bold;
+        font-size: 18px;
+        border-radius: 10px;
+        padding: 8px 16px;
+        transition: all 0.3s ease;
+    }
+    .stButton>button:hover {
+        background-color: #ff99aa;  /* 호버 시 색상 변화 */
+        transform: scale(1.05);
     }
     .stRadio>div>div>label {
         color: #d63384;  /* 보기 텍스트 핑크 계열 */
-        font-size: 18px;
+        font-size: 20px;
+        font-weight: bold;
     }
     .big-font {
-        font-size:25px !important;
+        font-size:30px !important;
+        color: #c71585;
+        font-weight:bold;
+    }
+    .score-font {
+        font-size:22px !important;
         color: #c71585;
         font-weight:bold;
     }
@@ -50,7 +64,7 @@ quiz_data = [
 # 앱 제목
 # ------------------------
 st.markdown('<p class="big-font">✏️ 헷갈리기 쉬운 국어 맞춤법 퀴즈</p>', unsafe_allow_html=True)
-st.write("파스텔 분홍 테마로 즐겁게 맞춤법을 학습해보세요! 🎀")
+st.write("파스텔 분홍 테마 + 화려한 UI로 즐겁게 학습해보세요! 🎀")
 
 # ------------------------
 # 세션 상태 초기화
@@ -89,9 +103,9 @@ if st.session_state.current_q < len(quiz_data):
 # ------------------------
 else:
     st.subheader("📊 퀴즈 완료! 성적표")
-    st.write(f"총 문제 수: {len(quiz_data)}")
-    st.write(f"맞힌 문제 수: {st.session_state.score}")
-    st.write(f"틀린 문제 수: {len(quiz_data) - st.session_state.score}")
+    st.markdown(f'<p class="score-font">총 문제 수: {len(quiz_data)}</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="score-font">맞힌 문제 수: {st.session_state.score}</p>', unsafe_allow_html=True)
+    st.markdown(f'<p class="score-font">틀린 문제 수: {len(quiz_data) - st.session_state.score}</p>', unsafe_allow_html=True)
     
     # 성적 등급 안내
     score_rate = st.session_state.score / len(quiz_data) * 100
@@ -107,7 +121,7 @@ else:
     # ------------------------
     labels = ['맞춘 문제', '틀린 문제']
     sizes = [st.session_state.score, len(quiz_data) - st.session_state.score]
-    colors = ['#ffb6c1', '#ffc0cb']  # 파스텔 핑크 계열
+    colors = ['#ffb6c1', '#ffc0cb']  # 파스텔 핑크
 
     fig, ax = plt.subplots()
     ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, colors=colors)
