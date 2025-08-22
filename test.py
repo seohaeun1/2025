@@ -4,7 +4,7 @@ import streamlit as st
 quiz_data = [
     {"question": "다음 중 올바른 맞춤법은?",
      "options": ["안 되", "안돼", "않돼"],
-     "answer": "안 되"},
+     "answer": "안돼"},
     
     {"question": "다음 중 올바른 맞춤법은?",
      "options": ["되려", "되이려", "되여"],
