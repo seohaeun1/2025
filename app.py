@@ -1,22 +1,35 @@
 import streamlit as st
 import random
-from jamo import h2j, j2hcj
 
 # -------------------------
-# 1. 자모 분리 함수
+# 1. 한글 분리 함수 (자모 단위)
 # -------------------------
-def to_jamo(word):
-    return list(j2hcj(h2j(word)))
+BASE_CODE, CHOSUNG, JUNGSUNG = 44032, 588, 28
+CHOSUNG_LIST  = [ 'ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ' ]
+JUNGSUNG_LIST = [ 'ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','ㅚ','ㅛ','ㅜ','ㅝ','ㅞ','ㅟ','ㅠ','ㅡ','ㅢ','ㅣ' ]
+JONGSUNG_LIST = [ '','ㄱ','ㄲ','ㄳ','ㄴ','ㄵ','ㄶ','ㄷ','ㄹ','ㄺ','ㄻ','ㄼ','ㄽ','ㄾ','ㄿ','ㅀ','ㅁ','ㅂ','ㅄ','ㅅ','ㅆ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ' ]
+
+def split_jamo(word):
+    result = []
+    for char in word:
+        if '가' <= char <= '힣':
+            code = ord(char) - BASE_CODE
+            cho  = code // CHOSUNG
+            jung = (code - (CHOSUNG * cho)) // JUNGSUNG
+            jong = (code - (CHOSUNG * cho) - (JUNGSUNG * jung))
+            result.append(CHOSUNG_LIST[cho])
+            result.append(JUNGSUNG_LIST[jung])
+            if jong != 0:
+                result.append(JONGSUNG_LIST[jong])
+        else:
+            result.append(char)
+    return result
 
 # -------------------------
-# 2. 단어 리스트 (예시)
-#    → 자모 개수가 6개인 단어만 추출
+# 2. 단어 리스트 (자모 6개짜리만)
 # -------------------------
-WORDS = ["책장", "바나나", "고라니", "책상", "인형", "달력"]
-
-# 자모 단위로 변환
-JAMO_WORDS = [to_jamo(w) for w in WORDS if len(to_jamo(w)) == 6]
-
+WORDS = ["가방끈", "고양이", "바나나", "토끼들", "학교들", "강아지"]  # 자모 6개 단어 예시
+JAMO_WORDS = [split_jamo(w) for w in WORDS if len(split_jamo(w)) == 6]
 ANSWER = random.choice(JAMO_WORDS)
 
 # -------------------------
@@ -44,21 +57,19 @@ def check_guess(guess, answer):
 # -------------------------
 # 5. UI
 # -------------------------
-st.title("🇰🇷 자모 워들: 꼬들")
+st.title("🇰🇷 자모 워들: 꼬들 (자모 6개 단어만)")
 
-st.write("자모 6개 단어 퍼즐 (총 6번 기회)")
+st.write("한글 단어를 입력하면 자동으로 자모 6개로 분리됩니다. (총 6번 기회)")
 
-guess = st.text_input("자모 6개 입력 (예: ㄱㅏㅂㅏㅇㅣ)", max_chars=6)
+guess_word = st.text_input("한글 단어 입력 (예: 가방끈, 고양이 등)")
 
 if st.button("제출"):
+    guess = split_jamo(guess_word)  # 입력을 자모 단위로 변환
     if len(guess) != 6:
-        st.warning("정확히 6개의 자모를 입력하세요!")
+        st.warning("자모로 분리했을 때 정확히 6개가 되는 단어만 입력하세요!")
     else:
-        st.session_state.guesses.append((guess, check_guess(list(guess), st.session_state.answer)))
+        st.session_state.guesses.append(("".join(guess), check_guess(guess, st.session_state.answer)))
 
-# -------------------------
-# 6. 결과 출력
-# -------------------------
 for g, r in st.session_state.guesses:
     st.write(f"{g}  {r}")
 
