@@ -28,7 +28,7 @@ def split_jamo(word):
 # -------------------------
 # 2. 단어 리스트 (자모 6개짜리만)
 # -------------------------
-WORDS = ["가방끈", "고양이", "바나나", "토끼들", "학교들", "강아지"]  # 자모 6개 단어 예시
+WORDS = ["달력", "케이크", "바나나", "책상", "운동", "방랑"]  # 자모 6개 단어 예시
 JAMO_WORDS = [split_jamo(w) for w in WORDS if len(split_jamo(w)) == 6]
 ANSWER = random.choice(JAMO_WORDS)
 
