@@ -83,9 +83,8 @@ JAMO_WORDS = [split_jamo(w) for w in WORDS if len(split_jamo(w)) == 6]
 # -------------------------
 if "guesses" not in st.session_state:
     st.session_state.guesses = []
-if "answer" not in st.session_state or "restart" in st.session_state:
+if "answer" not in st.session_state:
     st.session_state.answer = random.choice(JAMO_WORDS)
-    st.session_state.restart = False
 
 # -------------------------
 # 5. 체크 함수 (블록 색상)
@@ -123,8 +122,7 @@ with col2:
     if st.button("다시하기"):
         st.session_state.guesses = []
         st.session_state.answer = random.choice(JAMO_WORDS)
-        st.session_state.restart = True
-        st.experimental_rerun()
+        # st.experimental_rerun() 제거 → 버튼 클릭 후 UI 자동 갱신
 
 # -------------------------
 # 7. 결과 출력 (블록)
