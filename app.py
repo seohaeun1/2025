@@ -45,6 +45,19 @@ input[type="text"] {
 .stButton>button:hover {
     background-color: #FF1493;
 }
+
+/* shake effect */
+@keyframes shake {
+    0% { transform: translateX(0px); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+    100% { transform: translateX(0px); }
+}
+.shake {
+    display: inline-block;
+    animation: shake 0.5s;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -122,7 +135,7 @@ with col2:
     if st.button("다시하기"):
         st.session_state.guesses = []
         st.session_state.answer = random.choice(JAMO_WORDS)
-        # st.experimental_rerun() 제거 → 버튼 클릭 후 UI 자동 갱신
+        # rerun 제거
 
 # -------------------------
 # 7. 결과 출력 (블록)
@@ -135,11 +148,36 @@ for g, colors in st.session_state.guesses:
     st.markdown(row_html, unsafe_allow_html=True)
 
 # -------------------------
-# 8. 정답 체크
+# 8. 정답/실패 체크 + 이펙트
 # -------------------------
 if st.session_state.guesses:
     last_guess, colors = st.session_state.guesses[-1]
-    if list(last_guess) == st.session_state.answer:
+    correct = list(last_guess) == st.session_state.answer
+    if correct:
         st.success("🎉 정답입니다!")
+        # Confetti 효과
+        st.markdown("""
+        <script>
+        for(let i=0;i<100;i++){
+            let confetti = document.createElement('div');
+            confetti.style.position = 'fixed';
+            confetti.style.width = '10px';
+            confetti.style.height = '10px';
+            confetti.style.background = ['#FF69B4','#8A2BE2','#FFB6C1','#DDA0DD'][Math.floor(Math.random()*4)];
+            confetti.style.left = Math.random()*window.innerWidth+'px';
+            confetti.style.top = Math.random()*window.innerHeight+'px';
+            confetti.style.opacity = 0.8;
+            confetti.style.borderRadius = '50%';
+            confetti.style.animation = 'fall 3s linear forwards';
+            document.body.appendChild(confetti);
+        }
+        </script>
+        <style>
+        @keyframes fall {
+            to {transform: translateY(100vh); opacity: 0;}
+        }
+        </style>
+        """, unsafe_allow_html=True)
     elif len(st.session_state.guesses) >= 6:
         st.error(f"😭 실패! 정답은 {''.join(st.session_state.answer)}")
+        st.markdown(f"<p class='shake'>😭 실패!</p>", unsafe_allow_html=True)
