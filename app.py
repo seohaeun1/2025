@@ -2,7 +2,54 @@ import streamlit as st
 import random
 
 # -------------------------
-# 1. 한글 분리 함수 (자모 단위)
+# 1. CSS로 UI 꾸미기 (핑크·보라 테마)
+# -------------------------
+st.markdown("""
+<style>
+/* 전체 배경 */
+body {
+    background: linear-gradient(to bottom right, #ffe4f0, #e6e6fa);
+}
+
+/* 제목 */
+h1 {
+    color: #8A2BE2;
+    text-align: center;
+}
+
+/* 소제목 */
+h3 {
+    color: #FF69B4;
+    text-align: center;
+}
+
+/* 입력창 */
+input[type="text"] {
+    background-color: #ffe4f0;
+    border: 2px solid #FF69B4;
+    border-radius: 8px;
+    padding: 6px;
+}
+
+/* 버튼 */
+.stButton>button {
+    background-color: #FF69B4;
+    color: white;
+    font-weight: bold;
+    border-radius: 8px;
+    height: 40px;
+    width: 100px;
+}
+
+/* 버튼 눌렀을 때 */
+.stButton>button:hover {
+    background-color: #FF1493;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# -------------------------
+# 2. 한글 분리 함수 (자모 단위)
 # -------------------------
 BASE_CODE, CHOSUNG, JUNGSUNG = 44032, 588, 28
 CHOSUNG_LIST  = [ 'ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ' ]
@@ -26,54 +73,75 @@ def split_jamo(word):
     return result
 
 # -------------------------
-# 2. 단어 리스트 (자모 6개짜리만)
+# 3. 단어 리스트 (자모 6개)
 # -------------------------
-WORDS = ["달력", "케이크", "바나나", "책상", "운동", "방랑","날것","코끼리","칠판","모니터"]  # 자모 단어 예시
+WORDS = ["달력", "케이크", "바나나", "책상", "운동","방랑","날것","코끼리","칠판","모니터"]
 JAMO_WORDS = [split_jamo(w) for w in WORDS if len(split_jamo(w)) == 6]
-ANSWER = random.choice(JAMO_WORDS)
 
 # -------------------------
-# 3. 세션 상태 초기화
+# 4. 세션 상태 초기화
 # -------------------------
 if "guesses" not in st.session_state:
     st.session_state.guesses = []
-if "answer" not in st.session_state:
-    st.session_state.answer = ANSWER
+if "answer" not in st.session_state or "restart" in st.session_state:
+    st.session_state.answer = random.choice(JAMO_WORDS)
+    st.session_state.restart = False
 
 # -------------------------
-# 4. 체크 함수
+# 5. 체크 함수 (블록 색상)
 # -------------------------
 def check_guess(guess, answer):
     result = []
     for g, a in zip(guess, answer):
         if g == a:
-            result.append("🟩")
+            result.append("green")
         elif g in answer:
-            result.append("🟨")
+            result.append("yellow")
         else:
-            result.append("⬜")
-    return "".join(result)
+            result.append("gray")
+    return result
 
 # -------------------------
-# 5. UI
+# 6. UI
 # -------------------------
-st.title("🇰🇷 워들: 꼬들 (자모 6개 단어만)")
+st.markdown("<h1>🇰🇷 워들: 꼬들</h1>", unsafe_allow_html=True)
+st.markdown("<h3>자모 6개 단어 맞추기 (총 6번 기회)</h3>", unsafe_allow_html=True)
 
-st.write("총 6번 기회")
+guess_word = st.text_input("한글 단어 입력", max_chars=6)
 
-guess_word = st.text_input("한글 단어 입력 (예: 가방끈, 고양이 등)")
+col1, col2 = st.columns(2)
+with col1:
+    if st.button("제출"):
+        guess = split_jamo(guess_word)
+        if len(guess) != 6:
+            st.warning("자모로 분리했을 때 정확히 6개가 되는 단어만 입력하세요!")
+        else:
+            colors = check_guess(guess, st.session_state.answer)
+            st.session_state.guesses.append(("".join(guess), colors))
 
-if st.button("제출"):
-    guess = split_jamo(guess_word)  # 입력을 자모 단위로 변환
-    if len(guess) != 6:
-        st.warning("자모로 분리했을 때 정확히 6개가 되는 단어만 입력하세요!")
-    else:
-        st.session_state.guesses.append(("".join(guess), check_guess(guess, st.session_state.answer)))
+with col2:
+    if st.button("다시하기"):
+        st.session_state.guesses = []
+        st.session_state.answer = random.choice(JAMO_WORDS)
+        st.session_state.restart = True
+        st.experimental_rerun()
 
-for g, r in st.session_state.guesses:
-    st.write(f"{g}  {r}")
+# -------------------------
+# 7. 결과 출력 (블록)
+# -------------------------
+st.markdown("### 시도 결과")
+for g, colors in st.session_state.guesses:
+    row_html = ""
+    for char, color in zip(g, colors):
+        row_html += f"<span style='display:inline-block;width:32px;height:32px;margin:2px;text-align:center;line-height:32px;background-color:{color};color:white;font-weight:bold;border-radius:4px;'>{char}</span>"
+    st.markdown(row_html, unsafe_allow_html=True)
 
-if st.session_state.guesses and list(st.session_state.guesses[-1][0]) == st.session_state.answer:
-    st.success("🎉 정답입니다!")
-elif len(st.session_state.guesses) >= 6:
-    st.error(f"😭 실패! 정답은 {''.join(st.session_state.answer)}")
+# -------------------------
+# 8. 정답 체크
+# -------------------------
+if st.session_state.guesses:
+    last_guess, colors = st.session_state.guesses[-1]
+    if list(last_guess) == st.session_state.answer:
+        st.success("🎉 정답입니다!")
+    elif len(st.session_state.guesses) >= 6:
+        st.error(f"😭 실패! 정답은 {''.join(st.session_state.answer)}")
