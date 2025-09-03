@@ -1,144 +1,124 @@
-import streamlit as st
-import random
+import streamlit as st   # Streamlit 라이브러리 불러오기 (웹앱 제작용)
+import random            # 랜덤 모듈 불러오기 (정답 단어를 무작위로 선택하는 데 사용)
 
 # -------------------------
 # 1. CSS로 UI 꾸미기 (핑크·보라 테마)
 # -------------------------
-# Streamlit 기본 UI를 CSS로 꾸며서 배경, 제목, 입력창, 버튼 색상 등을 변경
-st.markdown("""
+st.markdown("""   # HTML/CSS를 Streamlit 앱에 삽입
 <style>
-/* 전체 배경: 그라데이션 핑크->보라 */
 body {
     background: linear-gradient(to bottom right, #ffe4f0, #e6e6fa);
+    /* 전체 배경: 핑크 → 보라 그라데이션 */
 }
-
-/* 제목 */
 h1 {
-    color: #8A2BE2;
-    text-align: center;
+    color: #8A2BE2;   /* 제목 색상 보라 */
+    text-align: center;   /* 중앙 정렬 */
 }
-
-/* 소제목 */
 h3 {
-    color: #FF69B4;
+    color: #FF69B4;   /* 소제목 색상 핑크 */
     text-align: center;
 }
-
-/* 입력창 */
 input[type="text"] {
-    background-color: #ffe4f0;
-    border: 2px solid #FF69B4;
-    border-radius: 8px;
-    padding: 6px;
+    background-color: #ffe4f0;   /* 입력창 배경색 */
+    border: 2px solid #FF69B4;  /* 테두리 핑크 */
+    border-radius: 8px;         /* 둥근 모서리 */
+    padding: 6px;               /* 안쪽 여백 */
 }
-
-/* 버튼 */
 .stButton>button {
-    background-color: #FF69B4;
-    color: white;
-    font-weight: bold;
-    border-radius: 8px;
-    height: 40px;
-    width: 100px;
+    background-color: #FF69B4;  /* 버튼 색상 핑크 */
+    color: white;               /* 버튼 글자색 흰색 */
+    font-weight: bold;          /* 글자 두껍게 */
+    border-radius: 8px;         /* 버튼 둥글게 */
+    height: 40px;               /* 버튼 높이 */
+    width: 100px;               /* 버튼 너비 */
 }
-
-/* 버튼 hover 시 색상 변화 */
 .stButton>button:hover {
-    background-color: #FF1493;
+    background-color: #FF1493;  /* 버튼에 마우스 올리면 진한 핑크 */
 }
 </style>
-""", unsafe_allow_html=True)
+""", unsafe_allow_html=True)   # HTML/CSS를 직접 넣을 수 있도록 허용
 
 # -------------------------
 # 2. 한글 분리 함수 (자모 단위)
 # -------------------------
-# 한글 글자를 초성, 중성, 종성으로 분리하는 함수
-BASE_CODE, CHOSUNG, JUNGSUNG = 44032, 588, 28
-CHOSUNG_LIST  = [ 'ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ' ]
-JUNGSUNG_LIST = [ 'ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','ㅚ','ㅛ','ㅜ','ㅝ','ㅞ','ㅟ','ㅠ','ㅡ','ㅢ','ㅣ' ]
-JONGSUNG_LIST = [ '','ㄱ','ㄲ','ㄳ','ㄴ','ㄵ','ㄶ','ㄷ','ㄹ','ㄺ','ㄻ','ㄼ','ㄽ','ㄾ','ㄿ','ㅀ','ㅁ','ㅂ','ㅄ','ㅅ','ㅆ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ' ]
+BASE_CODE, CHOSUNG, JUNGSUNG = 44032, 588, 28  
+# BASE_CODE: '가'의 유니코드 값
+# CHOSUNG: 초성 간격
+# JUNGSUNG: 중성 간격
+
+# 초성, 중성, 종성 리스트
+CHOSUNG_LIST  = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ']
+JUNGSUNG_LIST = ['ㅏ','ㅐ','ㅑ','ㅒ','ㅓ','ㅔ','ㅕ','ㅖ','ㅗ','ㅘ','ㅙ','ㅚ','ㅛ','ㅜ','ㅝ','ㅞ','ㅟ','ㅠ','ㅡ','ㅢ','ㅣ']
+JONGSUNG_LIST = ['','ㄱ','ㄲ','ㄳ','ㄴ','ㄵ','ㄶ','ㄷ','ㄹ','ㄺ','ㄻ','ㄼ','ㄽ','ㄾ','ㄿ','ㅀ','ㅁ','ㅂ','ㅄ','ㅅ','ㅆ','ㅇ','ㅈ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ']
 
 def split_jamo(word):
-    """
-    한글 단어를 받아서 자모 단위 리스트로 반환
-    예: "달력" -> ['ㄷ', 'ㅏ', 'ㄹ', 'ㄹ', 'ㅕ', 'ㄱ']
-    """
+    """단어를 초성/중성/종성 단위로 분리"""
     result = []
-    for char in word:
-        if '가' <= char <= '힣':  # 한글만 처리
-            code = ord(char) - BASE_CODE
-            cho  = code // CHOSUNG
-            jung = (code - (CHOSUNG * cho)) // JUNGSUNG
-            jong = (code - (CHOSUNG * cho) - (JUNGSUNG * jung))
-            result.append(CHOSUNG_LIST[cho])
-            result.append(JUNGSUNG_LIST[jung])
-            if jong != 0:
+    for char in word:   # 입력된 단어의 각 글자 처리
+        if '가' <= char <= '힣':   # 한글일 경우
+            code = ord(char) - BASE_CODE  # 유니코드 값에서 '가' 뺀 값
+            cho  = code // CHOSUNG        # 초성 인덱스
+            jung = (code - (CHOSUNG * cho)) // JUNGSUNG  # 중성 인덱스
+            jong = (code - (CHOSUNG * cho) - (JUNGSUNG * jung))  # 종성 인덱스
+            result.append(CHOSUNG_LIST[cho])   # 초성 추가
+            result.append(JUNGSUNG_LIST[jung]) # 중성 추가
+            if jong != 0:   # 종성이 있으면
                 result.append(JONGSUNG_LIST[jong])
         else:
-            result.append(char)  # 한글이 아니면 그대로 추가
+            result.append(char)   # 한글이 아니면 그대로 추가
     return result
 
 # -------------------------
 # 3. 단어 리스트 (자모 6개)
 # -------------------------
-# 게임에 사용할 단어 목록
-WORDS = ["달력", "케이크", "바나나", "책상", "운동","방랑","날것","코끼리","칠판","모니터","초기화","타자기","공항","심장","긴장","음식","급훈","아파트","현관","어머니","아버지","공간","삼각","러시아","번역","한글","카메라","라디오","안경"]
-# 자모로 분리했을 때 길이가 6인 단어만 사용
+WORDS = ["달력","케이크","바나나","책상","운동","방랑","날것","코끼리","칠판","모니터","초기화","타자기","공항","심장","긴장","음식","급훈","아파트","현관","어머니","아버지","공간","삼각","러시아","번역","한글","카메라","라디오","안경"]
+# 모든 단어 중에서 자모로 분리했을 때 길이가 6인 단어만 선별
 JAMO_WORDS = [split_jamo(w) for w in WORDS if len(split_jamo(w)) == 6]
 
 # -------------------------
 # 4. 세션 상태 초기화
 # -------------------------
-# Streamlit 세션 상태로 게임 진행 상태 유지
-if "guesses" not in st.session_state:
-    st.session_state.guesses = []  # 시도한 단어 기록
-if "answer" not in st.session_state:
-    st.session_state.answer = random.choice(JAMO_WORDS)  # 정답 단어 랜덤 선택
+if "guesses" not in st.session_state:   # 이전 시도가 없다면
+    st.session_state.guesses = []       # 시도 기록 저장용 리스트 생성
+if "answer" not in st.session_state:    # 정답 단어가 없다면
+    st.session_state.answer = random.choice(JAMO_WORDS)   # 무작위 단어 선택
 
 # -------------------------
 # 5. 체크 함수 (블록 색상)
 # -------------------------
-# 각 자모의 정답 여부에 따라 색상을 반환
 def check_guess(guess, answer):
-    """
-    guess와 answer를 비교하여 리스트로 색상 반환
-    green: 정확히 맞음
-    yellow: 존재하지만 위치 틀림
-    gray: 존재하지 않음
-    """
+    """추측 단어와 정답 단어를 비교해서 색상 반환"""
     result = []
-    for g, a in zip(guess, answer):
+    for g, a in zip(guess, answer):  # 같은 자리끼리 비교
         if g == a:
-            result.append("green")
+            result.append("green")   # 글자/위치 모두 일치
         elif g in answer:
-            result.append("yellow")
+            result.append("yellow")  # 글자는 포함되지만 위치 다름
         else:
-            result.append("gray")
+            result.append("gray")    # 글자 없음
     return result
 
 # -------------------------
 # 6. UI
 # -------------------------
-st.markdown("<h1>🇰🇷 워들: 꼬들</h1>", unsafe_allow_html=True)
-st.markdown("<h3>자모 6개 단어 맞추기 (총 6번 기회)</h3>", unsafe_allow_html=True)
+st.markdown("<h1>🇰🇷 워들: 꼬들</h1>", unsafe_allow_html=True)  # 제목 표시
+st.markdown("<h3>자모 6개 단어 맞추기 (총 6번 기회)</h3>", unsafe_allow_html=True)  # 설명 표시
 
-# 사용자 입력
-guess_word = st.text_input("한글 단어 입력", max_chars=6)
+guess_word = st.text_input("한글 단어 입력", max_chars=6)  # 사용자 입력창 (최대 6글자)
 
-# 버튼 배치: 제출 / 다시하기
+# 버튼을 두 개의 열에 배치
 col1, col2 = st.columns(2)
 with col1:
     if st.button("제출"):
-        guess = split_jamo(guess_word)  # 자모로 변환
-        if len(guess) != 6:
+        guess = split_jamo(guess_word)   # 입력 단어 → 자모 분리
+        if len(guess) != 6:              # 자모 개수가 6개가 아니면
             st.warning("자모로 분리했을 때 정확히 6개가 되는 단어만 입력하세요!")
         else:
-            colors = check_guess(guess, st.session_state.answer)  # 색상 체크
-            st.session_state.guesses.append(("".join(guess), colors))  # 기록
+            colors = check_guess(guess, st.session_state.answer)  # 정답과 비교해 색상 결정
+            st.session_state.guesses.append(("".join(guess), colors))  # 결과 기록
 
 with col2:
-    if st.button("다시하기"):
-        # 게임 초기화
+    if st.button("다시하기"):   # 게임 리셋
         st.session_state.guesses = []
         st.session_state.answer = random.choice(JAMO_WORDS)
 
@@ -146,22 +126,22 @@ with col2:
 # 7. 결과 출력 (블록)
 # -------------------------
 st.markdown("### 시도 결과")
-for g, colors in st.session_state.guesses:
-    # 각 자모별 색상 블록 생성
+for g, colors in st.session_state.guesses:   # 모든 시도한 단어 출력
     row_html = ""
-    for char, color in zip(g, colors):
+    for char, color in zip(g, colors):   # 자모와 색상 매칭
         row_html += f"<span style='display:inline-block;width:32px;height:32px;margin:2px;text-align:center;line-height:32px;background-color:{color};color:white;font-weight:bold;border-radius:4px;'>{char}</span>"
+        # HTML span 태그로 색상 박스 생성
     st.markdown(row_html, unsafe_allow_html=True)
 
 # -------------------------
 # 8. 정답/실패 체크 + 이펙트
 # -------------------------
-if st.session_state.guesses:
-    last_guess, colors = st.session_state.guesses[-1]
-    correct = list(last_guess) == st.session_state.answer  # 정답 여부 체크
+if st.session_state.guesses:   # 시도가 있을 경우
+    last_guess, colors = st.session_state.guesses[-1]   # 마지막 시도 확인
+    correct = list(last_guess) == st.session_state.answer  # 정답 여부 확인
     if correct:
-        st.success("🎉 정답입니다!")  # 정답 메시지
-        st.balloons()  # Streamlit에서 confetti 효과
-    elif len(st.session_state.guesses) >= 6:
-        st.error(f"😭 실패! 정답은 {''.join(st.session_state.answer)}")  # 6회 실패 시 정답 공개
-        st.markdown("💥💥💥", unsafe_allow_html=True)  # 실패 강조 
+        st.success("🎉 정답입니다!")   # 성공 메시지
+        st.balloons()                 # 풍선 이펙트
+    elif len(st.session_state.guesses) >= 6:   # 6번 실패 시
+        st.error(f"😭 실패! 정답은 {''.join(st.session_state.answer)}")
+        st.markdown("💥💥💥", unsafe_allow_html=True)  # 실패 이모지 표시
